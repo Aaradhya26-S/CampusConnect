@@ -133,3 +133,24 @@ def get_analytics():
         "by_category": category_counts,
         "by_priority": priority_counts
     }), 200
+
+@complaint_bp.route("/api/complaints/<int:complaint_id>", methods=["GET"])
+def get_complaint(complaint_id):
+    complaint = Complaint.query.get(complaint_id)
+
+    if complaint is None:
+        return jsonify({
+            "message": "Complaint not found"
+        }), 404
+
+    return jsonify({
+        "id": complaint.id,
+        "title": complaint.title,
+        "category": complaint.category,
+        "priority": complaint.priority,
+        "location": complaint.location,
+        "description": complaint.description,
+        "status": complaint.status
+    }), 200
+
+
