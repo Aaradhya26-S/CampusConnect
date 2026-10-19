@@ -1,0 +1,35 @@
+{
+  "name": "campus-connect",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Campus Connect — University Campus Issue and Complaint Management System",
+  "scripts": {
+    "dev": "concurrently \"npm --prefix server run dev\" \"npm --prefix client run dev\"",
+    "dev:client": "npm --prefix client run dev",
+    "dev:server": "npm --prefix server run dev",
+    "build": "npm --prefix server run build && npm --prefix client run build",
+    "build:client": "npm --prefix client run build",
+    "build:server": "npm --prefix server run build",
+    "test": "npm --prefix client run test && npm --prefix server run test",
+    "lint": "npm --prefix client run lint && npm --prefix server run lint",
+    "db:generate": "npm --prefix server run prisma:generate",
+    "db:migrate": "npm --prefix server run prisma:migrate",
+    "db:seed": "npm --prefix server run prisma:seed"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  },
+  "keywords": [
+    "campus-connect",
+    "complaint-management",
+    "react",
+    "nodejs",
+    "express",
+    "prisma",
+    "postgresql",
+    "typescript",
+    "devops"
+  ],
+  "author": "Campus Connect DevOps Team",
+  "license": "ISC"
+}
