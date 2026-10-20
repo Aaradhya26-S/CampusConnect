@@ -6,7 +6,7 @@
 
 **Campus Connect** is an enterprise-grade university issue and facility complaint management web application engineered for modern higher-education campuses. It provides college students, campus facility managers, and university administrators with an end-to-end digital desk to report, triage, assign, investigate, resolve, and audit campus maintenance disruptions.
 
-Developed as a college **DevOps & Full-Stack Engineering project** by a First-Year BTech Computer Science & Engineering student, this project demonstrates clean separation of concerns, automated CI pipelines, containerized databases, automated testing, and dual-mode runtime resilience.
+Developed as a college **DevOps & Full-Stack Engineering project** by a Second-Year BTech Computer Science & Engineering student, this project demonstrates clean separation of concerns, automated CI pipelines, containerized databases, automated testing, and dual-mode runtime resilience.
 
 ---
 
