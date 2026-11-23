@@ -38,24 +38,32 @@ export const Modal: React.FC<ModalProps> = ({
   }[maxWidth];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+      aria-describedby={description ? 'modal-description' : undefined}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-navy-950/60 backdrop-blur-sm transition-opacity"
         onClick={onClose}
+        aria-hidden="true"
       />
 
       {/* Modal Dialog Box */}
       <div
-        className={`relative w-full ${widthClasses} transform rounded-2xl bg-white p-6 text-left shadow-elevated transition-all border border-slate-200/90 z-10`}
+        className={`relative w-full ${widthClasses} max-h-[90vh] overflow-y-auto transform rounded-2xl bg-white p-6 text-left shadow-elevated transition-all border border-slate-200/90 z-10`}
       >
         <div className="flex items-start justify-between pb-4 border-b border-slate-100">
           <div>
-            <h3 className="text-lg font-bold text-navy-900">{title}</h3>
-            {description && <p className="mt-1 text-xs text-slate-500">{description}</p>}
+            <h3 id="modal-title" className="text-lg font-bold text-navy-900">{title}</h3>
+            {description && <p id="modal-description" className="mt-1 text-xs text-slate-500">{description}</p>}
           </div>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition"
           >
             <X className="h-5 w-5" />

@@ -22,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen, title }) => {
       <div className="flex items-center gap-3">
         <button
           onClick={() => setMobileOpen(true)}
+          aria-label="Open navigation menu"
           className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 lg:hidden"
         >
           <Menu className="h-5 w-5" />
@@ -46,6 +47,8 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen, title }) => {
               setShowNotifDropdown(!showNotifDropdown);
               setShowUserDropdown(false);
             }}
+            aria-label="Notifications"
+            aria-expanded={showNotifDropdown}
             className="relative rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-navy-900 transition"
             title="Notifications"
           >
@@ -139,6 +142,8 @@ export const Navbar: React.FC<NavbarProps> = ({ setMobileOpen, title }) => {
               setShowUserDropdown(!showUserDropdown);
               setShowNotifDropdown(false);
             }}
+            aria-label="User profile menu"
+            aria-expanded={showUserDropdown}
             className="flex items-center gap-2 rounded-full p-1 hover:ring-2 hover:ring-teal-200 transition"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-navy-900 text-teal-300 font-bold text-xs uppercase shadow-sm">

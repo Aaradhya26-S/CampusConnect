@@ -106,6 +106,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <button
             onClick={() => setCollapsed(!collapsed)}
+            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             className="hidden lg:flex h-7 w-7 items-center justify-center rounded-lg bg-navy-900 text-slate-400 hover:text-white hover:bg-navy-800 transition"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -209,6 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <button
               onClick={handleLogout}
               title="Sign Out"
+              aria-label="Sign out"
               className="rounded-lg p-1.5 text-slate-400 hover:bg-navy-800 hover:text-rose-400 transition shrink-0"
             >
               <LogOut className="h-4 w-4" />

@@ -11,6 +11,7 @@ import {
   Sparkles,
   Info,
   Building,
+  X,
 } from 'lucide-react';
 import { api } from '../services/api';
 import { ComplaintPriority, Complaint } from '../types';
@@ -84,11 +85,23 @@ export const ComplaintSubmit: React.FC = () => {
   const handleSimulatedFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Attached file exceeds the 5MB size limit. Please select a smaller file.');
+        e.target.value = '';
+        return;
+      }
+      setError('');
       setFileName(file.name);
       // Create local object URL for preview
       const previewUrl = URL.createObjectURL(file);
       setAttachmentUrl(previewUrl);
     }
+  };
+
+  const handleClearAttachment = () => {
+    setFileName('');
+    setAttachmentUrl('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,14 +179,27 @@ export const ComplaintSubmit: React.FC = () => {
             <p className="text-xs text-slate-500">Select the facility category that best represents the disruption</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div
+            role="radiogroup"
+            aria-label="Issue category"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-3"
+          >
             {categories.map((cat) => {
               const isSelected = category === cat.name;
               return (
                 <div
                   key={cat.name}
+                  role="radio"
+                  aria-checked={isSelected}
+                  tabIndex={0}
                   onClick={() => setCategory(cat.name)}
-                  className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 ${
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      setCategory(cat.name);
+                    }
+                  }}
+                  className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                     isSelected
                       ? 'border-teal-500 bg-teal-50/70 ring-2 ring-teal-500/20'
                       : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/60'
@@ -204,14 +230,27 @@ export const ComplaintSubmit: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div
+            role="radiogroup"
+            aria-label="Urgency level"
+            className="grid grid-cols-1 sm:grid-cols-4 gap-3"
+          >
             {priorities.map((p) => {
               const isSelected = priority === p.level;
               return (
                 <div
                   key={p.level}
+                  role="radio"
+                  aria-checked={isSelected}
+                  tabIndex={0}
                   onClick={() => setPriority(p.level)}
-                  className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all ${
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      setPriority(p.level);
+                    }
+                  }}
+                  className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 ${
                     isSelected
                       ? 'border-navy-900 bg-navy-900 text-white shadow-md'
                       : `border-slate-200 bg-white hover:border-slate-300 ${p.border}`
@@ -243,10 +282,11 @@ export const ComplaintSubmit: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label htmlFor="complaint-title" className="block text-xs font-bold text-slate-700 mb-1.5">
               Issue Title <span className="text-rose-500">*</span>
             </label>
             <input
+              id="complaint-title"
               type="text"
               required
               value={title}
@@ -257,7 +297,7 @@ export const ComplaintSubmit: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label htmlFor="complaint-location" className="block text-xs font-bold text-slate-700 mb-1.5">
               Precise Campus Location <span className="text-rose-500">*</span>
             </label>
             <div className="relative">
@@ -265,6 +305,7 @@ export const ComplaintSubmit: React.FC = () => {
                 <MapPin className="h-4 w-4" />
               </div>
               <input
+                id="complaint-location"
                 type="text"
                 required
                 value={location}
@@ -280,14 +321,18 @@ export const ComplaintSubmit: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-slate-700">
+              <label htmlFor="complaint-description" className="text-xs font-bold text-slate-700">
                 Comprehensive Description <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[10px] text-slate-400">{description.length}/2000 chars</span>
+              <span className={`text-[10px] ${description.length >= 1900 ? 'text-rose-600 font-bold' : description.length >= 1500 ? 'text-amber-600 font-medium' : 'text-slate-400'}`}>
+                {description.length}/2000 chars
+              </span>
             </div>
             <textarea
+              id="complaint-description"
               required
               rows={4}
+              maxLength={2000}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe what is broken, how long it has been occurring, and any immediate safety hazards..."
@@ -297,7 +342,7 @@ export const ComplaintSubmit: React.FC = () => {
 
           {/* Optional Attachment */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5">
+            <label htmlFor="complaint-file-input" className="block text-xs font-bold text-slate-700 mb-1.5">
               Supporting Photo / Evidence (Optional)
             </label>
             <div className="flex items-center gap-3">
@@ -305,6 +350,7 @@ export const ComplaintSubmit: React.FC = () => {
                 <Upload className="h-4 w-4 text-slate-500" />
                 <span>Choose Image or File</span>
                 <input
+                  id="complaint-file-input"
                   type="file"
                   accept="image/*,.pdf"
                   onChange={handleSimulatedFileUpload}
@@ -312,11 +358,22 @@ export const ComplaintSubmit: React.FC = () => {
                 />
               </label>
               {fileName && (
-                <span className="text-xs font-mono text-teal-700 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200 truncate max-w-xs">
-                  {fileName}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-teal-700 bg-teal-50 px-3 py-1 rounded-lg border border-teal-200 truncate max-w-xs">
+                    {fileName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleClearAttachment}
+                    aria-label="Remove attached file"
+                    className="p-1 rounded-md text-slate-400 hover:text-rose-600 hover:bg-slate-100 transition"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
               )}
             </div>
+            <p className="mt-1 text-[11px] text-slate-400">Supported formats: JPEG, PNG, PDF (Max 5MB)</p>
           </div>
         </div>
 

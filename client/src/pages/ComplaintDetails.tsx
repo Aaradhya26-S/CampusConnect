@@ -37,6 +37,7 @@ export const ComplaintDetails: React.FC = () => {
   const [commentText, setCommentText] = useState('');
   const [isInternalComment, setIsInternalComment] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [commentError, setCommentError] = useState('');
 
   // Modals
   const [showStatusModal, setShowStatusModal] = useState(false);
@@ -45,14 +46,20 @@ export const ComplaintDetails: React.FC = () => {
   const [assignedDeptId, setAssignedDeptId] = useState('');
   const [assignedStaff, setAssignedStaff] = useState('');
   const [resolutionNotes, setResolutionNotes] = useState('');
+  const [statusModalError, setStatusModalError] = useState('');
 
   // Rejection Modal
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
+  const [rejectModalError, setRejectModalError] = useState('');
 
   // Reopen Modal
   const [showReopenModal, setShowReopenModal] = useState(false);
   const [reopenReason, setReopenReason] = useState('');
+  const [reopenModalError, setReopenModalError] = useState('');
+
+  // Action Success Banner State
+  const [actionSuccess, setActionSuccess] = useState('');
 
   const isAdmin = user?.role === 'ADMIN';
 
@@ -84,7 +91,11 @@ export const ComplaintDetails: React.FC = () => {
 
   const handlePostComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim() || !complaint) return;
+    setCommentError('');
+    if (!commentText.trim() || !complaint) {
+      setCommentError('Comment cannot be empty.');
+      return;
+    }
 
     setSubmittingComment(true);
     try {
@@ -94,8 +105,10 @@ export const ComplaintDetails: React.FC = () => {
       );
       setCommentText('');
       setIsInternalComment(false);
+      setActionSuccess('Reply posted successfully.');
+      setTimeout(() => setActionSuccess(''), 4000);
     } catch (err: any) {
-      alert(err.message || 'Failed to post reply');
+      setCommentError(err.message || 'Failed to post reply.');
     } finally {
       setSubmittingComment(false);
     }
@@ -103,25 +116,35 @@ export const ComplaintDetails: React.FC = () => {
 
   const handleStatusUpdate = async () => {
     if (!complaint) return;
+    setStatusModalError('');
+
+    if (selectedStatus === 'RESOLVED' && !resolutionNotes.trim()) {
+      setStatusModalError('Please provide resolution summary notes when marking a complaint as resolved.');
+      return;
+    }
+
     try {
       const updated = await api.updateComplaintStatus(complaint.id, selectedStatus, {
-        note: statusNote || undefined,
+        note: statusNote.trim() || undefined,
         assignedDepartmentId: assignedDeptId || undefined,
-        assignedStaffName: assignedStaff || undefined,
-        resolutionNotes: resolutionNotes || undefined,
+        assignedStaffName: assignedStaff.trim() || undefined,
+        resolutionNotes: resolutionNotes.trim() || undefined,
       });
       setComplaint(updated);
       setShowStatusModal(false);
       setStatusNote('');
+      setActionSuccess(`Complaint status updated to ${selectedStatus}.`);
+      setTimeout(() => setActionSuccess(''), 4000);
     } catch (err: any) {
-      alert(err.message || 'Failed to update status');
+      setStatusModalError(err.message || 'Failed to update status.');
     }
   };
 
   const handleRejectComplaint = async () => {
     if (!complaint) return;
+    setRejectModalError('');
     if (!rejectionReason.trim()) {
-      alert('A detailed rejection reason is required.');
+      setRejectModalError('A detailed rejection reason is required.');
       return;
     }
 
@@ -133,15 +156,18 @@ export const ComplaintDetails: React.FC = () => {
       setComplaint(updated);
       setShowRejectModal(false);
       setRejectionReason('');
+      setActionSuccess('Complaint ticket has been rejected.');
+      setTimeout(() => setActionSuccess(''), 4000);
     } catch (err: any) {
-      alert(err.message || 'Failed to reject complaint');
+      setRejectModalError(err.message || 'Failed to reject complaint.');
     }
   };
 
   const handleReopenComplaint = async () => {
     if (!complaint) return;
+    setReopenModalError('');
     if (reopenReason.trim().length < 5) {
-      alert('Please provide an explanation with at least 5 characters for reopening.');
+      setReopenModalError('Please provide an explanation with at least 5 characters for reopening.');
       return;
     }
 
@@ -150,8 +176,10 @@ export const ComplaintDetails: React.FC = () => {
       setComplaint(updated);
       setShowReopenModal(false);
       setReopenReason('');
+      setActionSuccess('Complaint successfully reopened for administrative review.');
+      setTimeout(() => setActionSuccess(''), 4000);
     } catch (err: any) {
-      alert(err.message || 'Failed to reopen complaint');
+      setReopenModalError(err.message || 'Failed to reopen complaint.');
     }
   };
 
@@ -193,7 +221,10 @@ export const ComplaintDetails: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2">
           {isEligibleForReopen && (
             <button
-              onClick={() => setShowReopenModal(true)}
+              onClick={() => {
+                setReopenModalError('');
+                setShowReopenModal(true);
+              }}
               className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-800 hover:bg-amber-100 transition shadow-sm"
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -206,6 +237,7 @@ export const ComplaintDetails: React.FC = () => {
               <button
                 onClick={() => {
                   setSelectedStatus(complaint.status === 'SUBMITTED' ? 'UNDER_REVIEW' : 'IN_PROGRESS');
+                  setStatusModalError('');
                   setShowStatusModal(true);
                 }}
                 className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white hover:bg-teal-700 transition shadow-sm"
@@ -215,7 +247,10 @@ export const ComplaintDetails: React.FC = () => {
 
               {complaint.status !== 'REJECTED' && complaint.status !== 'CLOSED' && (
                 <button
-                  onClick={() => setShowRejectModal(true)}
+                  onClick={() => {
+                    setRejectModalError('');
+                    setShowRejectModal(true);
+                  }}
                   className="inline-flex items-center gap-1.5 rounded-xl border border-rose-300 bg-rose-50 px-3.5 py-2 text-xs font-bold text-rose-700 hover:bg-rose-100 transition shadow-sm"
                 >
                   <XCircle className="h-3.5 w-3.5" />
@@ -226,6 +261,23 @@ export const ComplaintDetails: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Action Success Alert Banner */}
+      {actionSuccess && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-semibold text-emerald-800 flex items-center justify-between shadow-soft">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{actionSuccess}</span>
+          </div>
+          <button
+            onClick={() => setActionSuccess('')}
+            aria-label="Dismiss message"
+            className="text-emerald-700 hover:text-emerald-900 text-xs font-bold"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Main Ticket Summary Card */}
       <div className="rounded-2xl bg-white border border-slate-200/90 shadow-soft p-6 sm:p-8 space-y-6">
@@ -398,20 +450,33 @@ export const ComplaintDetails: React.FC = () => {
 
         {/* Reply Box */}
         <form onSubmit={handlePostComment} className="pt-2 border-t border-slate-100 space-y-3">
-          <label className="block text-xs font-bold text-navy-900">Add a Response or Query</label>
+          <label htmlFor="ticket-reply-text" className="block text-xs font-bold text-navy-900">
+            Add a Response or Query
+          </label>
+          {commentError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>{commentError}</span>
+            </div>
+          )}
           <textarea
+            id="ticket-reply-text"
             rows={3}
             required
             value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
+            onChange={(e) => {
+              setCommentText(e.target.value);
+              if (commentError) setCommentError('');
+            }}
             placeholder="Type your message here..."
             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs text-navy-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
 
           <div className="flex items-center justify-between">
             {isAdmin ? (
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
+              <label htmlFor="internal-comment-toggle" className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
                 <input
+                  id="internal-comment-toggle"
                   type="checkbox"
                   checked={isInternalComment}
                   onChange={(e) => setIsInternalComment(e.target.checked)}
@@ -443,9 +508,17 @@ export const ComplaintDetails: React.FC = () => {
         description="Progress ticket through operational stages and record audit notes."
       >
         <div className="space-y-4">
+          {statusModalError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>{statusModalError}</span>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Target Status</label>
+            <label htmlFor="modal-target-status" className="block text-xs font-bold text-slate-700 mb-1">Target Status</label>
             <select
+              id="modal-target-status"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value as ComplaintStatus)}
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-teal-500"
@@ -459,8 +532,9 @@ export const ComplaintDetails: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Assign Responsible Department</label>
+            <label htmlFor="modal-assigned-dept" className="block text-xs font-bold text-slate-700 mb-1">Assign Responsible Department</label>
             <select
+              id="modal-assigned-dept"
               value={assignedDeptId}
               onChange={(e) => setAssignedDeptId(e.target.value)}
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-teal-500"
@@ -475,8 +549,9 @@ export const ComplaintDetails: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Assigned Technician / Staff Name</label>
+            <label htmlFor="modal-assigned-staff" className="block text-xs font-bold text-slate-700 mb-1">Assigned Technician / Staff Name</label>
             <input
+              id="modal-assigned-staff"
               type="text"
               value={assignedStaff}
               onChange={(e) => setAssignedStaff(e.target.value)}
@@ -487,9 +562,13 @@ export const ComplaintDetails: React.FC = () => {
 
           {selectedStatus === 'RESOLVED' && (
             <div>
-              <label className="block text-xs font-bold text-emerald-800 mb-1">Resolution Summary Notes</label>
+              <label htmlFor="modal-resolution-notes" className="block text-xs font-bold text-emerald-800 mb-1">
+                Resolution Summary Notes <span className="text-rose-500">*</span>
+              </label>
               <textarea
+                id="modal-resolution-notes"
                 rows={3}
+                required
                 value={resolutionNotes}
                 onChange={(e) => setResolutionNotes(e.target.value)}
                 placeholder="Details of fix applied, parts replaced, and post-service verification..."
@@ -499,8 +578,9 @@ export const ComplaintDetails: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Audit Note</label>
+            <label htmlFor="modal-audit-note" className="block text-xs font-bold text-slate-700 mb-1">Audit Note</label>
             <input
+              id="modal-audit-note"
               type="text"
               value={statusNote}
               onChange={(e) => setStatusNote(e.target.value)}
@@ -534,15 +614,30 @@ export const ComplaintDetails: React.FC = () => {
         description="Provide a clear explanation for rejecting this complaint. This will be visible to the student."
       >
         <div className="space-y-4">
+          {rejectModalError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>{rejectModalError}</span>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-bold text-rose-800 mb-1">
-              Rejection Reason <span className="text-rose-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="modal-rejection-reason" className="block text-xs font-bold text-rose-800">
+                Rejection Reason <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[10px] text-slate-400">{rejectionReason.length}/500 chars</span>
+            </div>
             <textarea
+              id="modal-rejection-reason"
               rows={4}
               required
+              maxLength={500}
               value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
+              onChange={(e) => {
+                setRejectionReason(e.target.value);
+                if (rejectModalError) setRejectModalError('');
+              }}
               placeholder="e.g. Duplicate issue already tracked under CC-2025-WIFI02, or issue does not fall under university facilities purview..."
               className="w-full px-3 py-2 text-xs rounded-xl border border-rose-300 bg-white focus:ring-2 focus:ring-rose-500"
             />
@@ -573,15 +668,30 @@ export const ComplaintDetails: React.FC = () => {
         description="If the issue has recurred or was not resolved satisfactorily, please provide justification."
       >
         <div className="space-y-4">
+          {reopenModalError && (
+            <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+              <span>{reopenModalError}</span>
+            </div>
+          )}
+
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Explanation for Reopening <span className="text-rose-500">*</span>
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label htmlFor="modal-reopen-reason" className="block text-xs font-bold text-slate-700">
+                Explanation for Reopening <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[10px] text-slate-400">{reopenReason.length}/500 chars</span>
+            </div>
             <textarea
+              id="modal-reopen-reason"
               rows={4}
               required
+              maxLength={500}
               value={reopenReason}
-              onChange={(e) => setReopenReason(e.target.value)}
+              onChange={(e) => {
+                setReopenReason(e.target.value);
+                if (reopenModalError) setReopenModalError('');
+              }}
               placeholder="Explain why this ticket is being reopened (e.g. the light fixture started flickering again after 1 hour)..."
               className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-amber-500"
             />
