@@ -43,7 +43,7 @@ export async function authenticateToken(req: AuthenticatedRequest, res: Response
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as AuthenticatedUser;
-
+    
     // Verify user still exists
     const user = await campusStore.findUserById(decoded.id);
     if (!user) {
