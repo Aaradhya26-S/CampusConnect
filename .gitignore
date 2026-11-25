@@ -48,3 +48,9 @@ server/prisma/*.db-journal
 # Uploads directory
 server/uploads/*
 !server/uploads/.gitkeep
+venv/
+__pycache__/
+*.pyc
+.env
+instance/
+*.db

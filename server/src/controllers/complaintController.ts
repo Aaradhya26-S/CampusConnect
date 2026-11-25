@@ -24,7 +24,7 @@ export async function getComplaints(req: AuthenticatedRequest, res: Response): P
     }
 
     const allMatching = await campusStore.getComplaints(filter);
-    
+
     // Pagination
     const pageNum = Math.max(1, parseInt(page as string, 10) || 1);
     const limitNum = Math.max(1, parseInt(limit as string, 10) || 10);
