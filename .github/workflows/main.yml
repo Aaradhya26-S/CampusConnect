@@ -1,1 +1,53 @@
+name: Campus Connect CI Pipeline
 
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/admin-module
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Check frontend TypeScript
+        run: npm run lint
+        working-directory: client
+
+      - name: Run frontend tests
+        run: npm test -- --run
+        working-directory: client
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: client
+
+      - name: Install backend dependencies
+        run: npm ci
+        working-directory: server
+
+      - name: Check backend
+        run: npm run lint
+        working-directory: server
+
+      - name: Run backend tests
+        run: npm test
+        working-directory: server
