@@ -1,0 +1,36 @@
+
+name: Security Scan
+
+on:
+  push:
+    branches:
+      - main
+      - feature/admin-module
+      - feature/student-module
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 1'
+
+jobs:
+  security-audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Audit frontend dependencies
+        run: npm audit --audit-level=high
+        working-directory: client
+
+      - name: Audit backend dependencies
+        run: npm audit --audit-level=high
+        working-directory: server
